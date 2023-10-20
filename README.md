@@ -23,8 +23,8 @@ Det framgår lite tydligare i bilden nedan att förprocesseringen är den störs
 När vi är klara med förprocesseringen deserialiserar vi modellen, anropar den med vår indata och presenterar resultatet.
 
 # Förberedelser
-1. Installera npm
-2. Kör `npm install -g npx` för att installera npx
+1. Installera npm (https://nodejs.org/en/download)
+2. Kör `npm install -g npx` i din terminal för att installera npx
 3. Hitta och ladda ner en testbild på en person du vill åldersbestämma.
 4. Hämta den färdigtränade modellen från [https://github.com/onnx/models/blob/main/vision/body_analysis/age_gender/models/age_googlenet.onnx](https://github.com/onnx/models/blob/main/vision/body_analysis/age_gender/models/age_googlenet.onnx)
 
@@ -32,8 +32,7 @@ När vi är klara med förprocesseringen deserialiserar vi modellen, anropar den
 Vi börjar med att skapa ett nytt react-typescript projekt och går in i det.
 
 ```bash
-npx create-react-app onnx-demo --template typescript
-cd onnx-demo
+npx create-react-app onnx-demo --template typescript && cd onnx-demo
 ```
 
 Vi testar att projektet sattes upp ordentligt genom att starta development-servern som följer med 
@@ -45,7 +44,7 @@ npm start
 
 Om allt fungerar som det ska, startar development-servern och en ny flik att öppnas i din webbläsare 
 med ett exempelprojekt som skapades av `create-react-app`.
-Avsluta development-servern med `Ctrl-c`.
+Avsluta development-servern med `Ctrl-c` i din terminal.
 
 ![terminal-screenshot](media/terminal-screenshot-1.png)
 
@@ -156,7 +155,7 @@ Vi gör allt detta i en `preprocess` funktion som körs när bilden laddas:
   ...
   <img ... onLoad={preprocess}/>
 ```
-Vi går igenom funktionen en sak i taget:
+Vi går igenom funktionen ett steg i taget:
 Först skapar vi en canvas och ritar bilden - skalad - på canvasen för att kunna läsa ut pixeldatan med `getImageData`. 
 
 Sedan använder vi funktionen `remove_alpha()` för att skapa en ny array med samma pixelar men utan sin alphakanal.
@@ -261,9 +260,9 @@ Förklaringen till det är att modellen inte är helt säker i sin estimering, u
 Detta är ett resultat av hur modellen är tränad. I vårt fall har modellen tränats att klassificera bilden till ett av åtta åldersintervall.
 Då kommer modellen att returnera en lista med sannolikheter för de olika intervallen.
 
-Detta är en vanligt mönster med maskininlärningsmodeller. 
+Detta är ett vanligt mönster med maskininlärningsmodeller. 
 Istället för att direkt returnera ett svar får man ut sannolikheter eller *scores* för de olika *möjliga* svaren.
-Det är viktigt att poängtera att även om man ofta benämner dessa *scores* som en sannolikheter, så är det egentligen bara modellens *estimering* av den korrekta sannolikheten. Om modellen är tränad på en annan typ av data, eller har inbyggda bias så kommer sannolikheterna inte att representera något rimligt.
+Det är viktigt att poängtera att även om man ofta benämner dessa *scores* som en samling av sannolikheter, så är det egentligen bara modellens *estimering* av den korrekta sannolikheten. Om modellen är tränad på en annan typ av data, eller har inbyggda bias så kommer sannolikheterna inte att representera något rimligt.
 Som exempel kan vi tänka oss att vi skickar en helt annan typ av bild till vår modell, till exempel en helt blank bild. Modellen kommer fortfarande att svara med sannolikheter för de 8 åldersintervallen den är tränad på, trots att det inte betyder någonting för en blank bild.
 
 Hur vi väljer att presentera resultatet är upp till oss.
@@ -274,7 +273,7 @@ Ett sätt hade varit att rita ut sannolikheterna i ett histogram.
 Man kan också tänka sig att man vill se till att bara presentera resultat när modellen är tillräckligt säker, och be användaren använda en annan bild om sannolikheten 
 för något intervall inte överstiger ett visst tröskelvärde.
 
-För att göra det enkelt för oss kommer vi att returnera det intervall som har högst sannolikhet enligt modellen utan att ta hänsyn till det egentliga sannolikhetsvärdet. Till exempel skulle vi om vi fick resultatet fån bilden presenterat intervallet 8-12 år eftersom den stapeln är högst.
+För att göra det enkelt för oss kommer vi att returnera det intervall som har högst sannolikhet enligt modellen utan att ta hänsyn till det egentliga sannolikhetsvärdet. Till exempel om vi fick resultatet fån bilden, då skulle vi presenterat intervallet 8-12 år eftersom den stapeln är högst.
 
 # Presentation av resultatet
 Nu återstår alltså att presentera resultatet för användaren. Detta kan göras på många olika sätt men vi gör det enkelt för oss själva och 
@@ -339,7 +338,7 @@ Eftersom den ursprungliga modellen är tränad på en massa ansikten, kan vi utn
 På detta sett behöver vi inte alls lika mycket träningsdata när vi tränar vår nya modell.
 
 I praktiken brukar man inte använda den sista outputen från basmodellen (åldersmodellen) utan utdatan några lager ned i modellen.
-Rationalen bakom det är att deep learning-modeller lär sig mer konkreta kunskaper i de första (undre) lagren och mer domänspecifika abstrakta kunskaper de övre.
+Rationalen bakom det är att deep learning-modeller lär sig mer konkreta kunskaper i de första (undre) lagren och mer domänspecifika abstrakta kunskaper i de övre lagren.
 Därför vill man ignorera de översta lagren i basmodellen som innehåller kunskap som bara är applicerbar på originalproblemet (åldersestimering), 
 samtidigt som man vill utnyttja den mer generella kunskapen från de undre lagren.
 
